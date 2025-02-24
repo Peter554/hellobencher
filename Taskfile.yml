@@ -1,0 +1,32 @@
+version: '3'
+
+tasks:
+  test:
+    cmds:
+      - uv run pytest --benchmark-skip {{.CLI_ARGS}}
+
+  bench:
+    cmds:
+      - |
+        uv run pytest \
+          --benchmark-only \
+          --benchmark-autosave \
+          --benchmark-compare \
+          --benchmark-columns=mean,rounds,iterations \
+          {{.CLI_ARGS}}
+
+  bench.bencher:
+    cmds:
+      - |
+        uv run pytest \
+          --benchmark-only \
+          --benchmark-json benchmark.json
+      - |
+        bencher run \
+          --project hellobencher \
+          --adapter python_pytest \
+          --file benchmark.json
+
+  fmt:
+    cmds:
+      - uv run ruff format
