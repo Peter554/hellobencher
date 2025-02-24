@@ -1,0 +1,35 @@
+on:
+  push:
+    branches: master
+
+jobs:
+  benchmark_master:
+    name: Continuous Benchmarking with Bencher
+    permissions:
+      checks: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Set up Python
+        run: uv python install
+      - name: Run benchmarks
+        run: uv run pytest --benchmark-only --benchmark-json benchmark.json
+      - uses: bencherdev/bencher@main
+      - name: Track master branch benchmarks with Bencher
+        run: |
+          bencher run \
+            --project hellobencher \
+            --token '${{ secrets.BENCHER_API_TOKEN }}' \
+            --branch master \
+            --testbed ubuntu-latest \
+            --threshold-measure latency \
+            --threshold-test t_test \
+            --threshold-max-sample-size 64 \
+            --threshold-upper-boundary 0.99 \
+            --thresholds-reset \
+            --err \
+            --adapter python_pytest \
+            --github-actions '${{ secrets.GITHUB_TOKEN }}' \
+            --file benchmark.json
