@@ -1,3 +1,7 @@
+import functools
+
+
+@functools.cache
 def fib(n):
     if n == 0:
         return 0
